@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { ClientFormData } from '../../types';
 import { TextInput } from '../Input';
 import FormSection from '../FormSection';
@@ -11,6 +11,39 @@ interface StepProps {
 }
 
 const StepContactInfo: React.FC<StepProps> = ({ formData, onInputChange, onNext }) => {
+  const [showErrors, setShowErrors] = useState(false);
+
+  const errors = useMemo(() => {
+    const nextErrors: Partial<Record<'fullName' | 'email' | 'phoneNumber', string>> = {};
+
+    if (!formData.fullName.trim()) nextErrors.fullName = 'Full Name is required.';
+
+    if (!formData.email.trim()) {
+      nextErrors.email = 'Email is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      nextErrors.email = 'Enter a valid email address.';
+    }
+
+    if (!formData.phoneNumber.trim()) {
+      nextErrors.phoneNumber = 'Phone Number is required.';
+    } else {
+      const digits = formData.phoneNumber.replace(/\D/g, '');
+      if (digits.length < 10) nextErrors.phoneNumber = 'Enter a valid phone number.';
+    }
+
+    return nextErrors;
+  }, [formData.email, formData.fullName, formData.phoneNumber]);
+
+  const isValid = Object.keys(errors).length === 0;
+
+  const handleNext = () => {
+    if (!isValid) {
+      setShowErrors(true);
+      return;
+    }
+    onNext();
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
       <FormSection title="Contact Information">
@@ -22,6 +55,7 @@ const StepContactInfo: React.FC<StepProps> = ({ formData, onInputChange, onNext 
             value={formData.fullName} 
             onChange={onInputChange} 
             required 
+            error={showErrors ? errors.fullName : undefined}
           />
           <TextInput 
             label="Email" 
@@ -31,6 +65,7 @@ const StepContactInfo: React.FC<StepProps> = ({ formData, onInputChange, onNext 
             value={formData.email} 
             onChange={onInputChange} 
             required 
+            error={showErrors ? errors.email : undefined}
           />
           <TextInput 
             label="Phone Number" 
@@ -39,6 +74,7 @@ const StepContactInfo: React.FC<StepProps> = ({ formData, onInputChange, onNext 
             value={formData.phoneNumber} 
             onChange={onInputChange} 
             required 
+            error={showErrors ? errors.phoneNumber : undefined}
           />
           <TextInput 
             label="Company / Organization" 
@@ -62,8 +98,9 @@ const StepContactInfo: React.FC<StepProps> = ({ formData, onInputChange, onNext 
         <div className="flex justify-end mt-12">
           <button 
             type="button"
-            onClick={onNext}
-            className="px-12 py-4 bg-[#0ea5e9] text-white font-bold rounded-lg shadow-xl shadow-sky-200 hover:bg-sky-600 active:scale-[0.98] transition-all uppercase tracking-widest text-sm"
+            onClick={handleNext}
+            disabled={!isValid}
+            className={`px-12 py-4 bg-[#0ea5e9] text-white font-bold rounded-lg shadow-xl shadow-sky-200 hover:bg-sky-600 active:scale-[0.98] transition-all uppercase tracking-widest text-sm ${!isValid ? 'opacity-60 cursor-not-allowed hover:bg-[#0ea5e9]' : ''}`}
           >
             Next: Selection
           </button>

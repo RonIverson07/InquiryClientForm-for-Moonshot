@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { ClientFormData } from '../../types';
 import { Checkbox } from '../Input';
 import FormSection from '../FormSection';
@@ -13,6 +13,20 @@ interface StepProps {
 }
 
 const StepServices: React.FC<StepProps> = ({ formData, onServiceToggle, onInputChange, onNext, onPrev }) => {
+  const [showErrors, setShowErrors] = useState(false);
+
+  const isValid = useMemo(() => {
+    return Object.values(formData.services).some(Boolean);
+  }, [formData.services]);
+
+  const handleNext = () => {
+    if (!isValid) {
+      setShowErrors(true);
+      return;
+    }
+    onNext();
+  };
+
   const packages = [
     "Virtual Office Package — ₱1,999 / month",
     "Co-working Space Standard — ₱4,999 / month",
@@ -33,6 +47,9 @@ const StepServices: React.FC<StepProps> = ({ formData, onServiceToggle, onInputC
           <Checkbox label="HR & Payroll Management" checked={formData.services.hrPayrollManagement} onChange={() => onServiceToggle('hrPayrollManagement')} />
           <Checkbox label="Business Mentorship & Strategic Consultation" checked={formData.services.businessMentorshipConsultation} onChange={() => onServiceToggle('businessMentorshipConsultation')} />
         </div>
+        {showErrors && !isValid && (
+          <p className="text-xs text-red-600 -mt-6 mb-8">Please select at least one service.</p>
+        )}
         
         <div className="space-y-10">
           <div className="flex flex-col space-y-4">
@@ -70,8 +87,9 @@ const StepServices: React.FC<StepProps> = ({ formData, onServiceToggle, onInputC
           </button>
           <button 
             type="button"
-            onClick={onNext}
-            className="px-12 py-4 bg-[#0ea5e9] text-white font-bold rounded-lg shadow-xl shadow-sky-200 hover:bg-sky-600 transition-all uppercase tracking-widest text-sm"
+            onClick={handleNext}
+            disabled={!isValid}
+            className={`px-12 py-4 bg-[#0ea5e9] text-white font-bold rounded-lg shadow-xl shadow-sky-200 hover:bg-sky-600 transition-all uppercase tracking-widest text-sm ${!isValid ? 'opacity-60 cursor-not-allowed hover:bg-[#0ea5e9]' : ''}`}
           >
             Next: Details
           </button>

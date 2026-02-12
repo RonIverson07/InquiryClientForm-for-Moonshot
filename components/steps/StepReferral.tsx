@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { ClientFormData, FormStatus } from '../../types';
 import { TextInput, Checkbox, RadioGroup } from '../Input';
 import FormSection from '../FormSection';
@@ -14,6 +14,33 @@ interface StepProps {
 }
 
 const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle, onInputChange, onPrev, onSubmit }) => {
+  const [showErrors, setShowErrors] = useState(false);
+
+  const errors = useMemo(() => {
+    const nextErrors: Partial<Record<'bestTimeToReach' | 'otherReferralSource', string>> = {};
+
+    if (!formData.bestTimeToReach.trim()) {
+      nextErrors.bestTimeToReach = 'Best Time to Reach You is required.';
+    }
+
+    if (formData.referralSource.includes('Other') && !formData.otherReferralSource?.trim()) {
+      nextErrors.otherReferralSource = 'Please specify the referral source.';
+    }
+
+    return nextErrors;
+  }, [formData.bestTimeToReach, formData.otherReferralSource, formData.referralSource]);
+
+  const isValid = Object.keys(errors).length === 0;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    if (!isValid) {
+      e.preventDefault();
+      setShowErrors(true);
+      return;
+    }
+    onSubmit(e);
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
       <FormSection title="Referral & Communication">
@@ -31,14 +58,19 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
               </div>
             </div>
             {formData.referralSource.includes('Other') && (
-              <input 
-                type="text" 
-                name="otherReferralSource" 
-                placeholder="Please specify..." 
-                value={formData.otherReferralSource} 
-                onChange={onInputChange} 
-                className="mt-6 w-full px-4 py-2 text-sm bg-slate-50 border-b-2 border-slate-200 focus:border-[#0ea5e9] outline-none text-slate-900 transition-colors" 
-              />
+              <>
+                <input 
+                  type="text" 
+                  name="otherReferralSource" 
+                  placeholder="Please specify..." 
+                  value={formData.otherReferralSource} 
+                  onChange={onInputChange} 
+                  className="mt-6 w-full px-4 py-2 text-sm bg-slate-50 border-b-2 border-slate-200 focus:border-[#0ea5e9] outline-none text-slate-900 transition-colors" 
+                />
+                {showErrors && errors.otherReferralSource && (
+                  <p className="mt-2 text-xs text-red-600">{errors.otherReferralSource}</p>
+                )}
+              </>
             )}
           </div>
 
@@ -55,6 +87,8 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
               name="bestTimeToReach" 
               value={formData.bestTimeToReach} 
               onChange={onInputChange} 
+              required
+              error={showErrors ? errors.bestTimeToReach : undefined}
             />
           </div>
         </div>
@@ -69,9 +103,9 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
           </button>
           <button 
             type="button"
-            onClick={onSubmit}
-            disabled={status === FormStatus.SUBMITTING}
-            className={`px-10 py-4 bg-[#0ea5e9] text-white font-bold rounded-lg shadow-xl shadow-sky-200 hover:bg-sky-600 active:scale-[0.98] transition-all flex items-center space-x-3 uppercase tracking-widest text-sm ${status === FormStatus.SUBMITTING ? 'opacity-70 cursor-not-allowed' : ''}`}
+            onClick={handleSubmit}
+            disabled={status === FormStatus.SUBMITTING || !isValid}
+            className={`px-10 py-4 bg-[#0ea5e9] text-white font-bold rounded-lg shadow-xl shadow-sky-200 hover:bg-sky-600 active:scale-[0.98] transition-all flex items-center space-x-3 uppercase tracking-widest text-sm ${(status === FormStatus.SUBMITTING || !isValid) ? 'opacity-70 cursor-not-allowed hover:bg-[#0ea5e9]' : ''}`}
           >
             {status === FormStatus.SUBMITTING ? (
               <>

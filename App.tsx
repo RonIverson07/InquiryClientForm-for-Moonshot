@@ -4,6 +4,7 @@ import { ClientFormData, FormStatus, AppView } from './types';
 import IntakeForm from './pages/IntakeForm';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
+import { createIntakeSubmission } from './services/intakeSubmissions';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.INTAKE_FORM);
@@ -65,13 +66,18 @@ const App: React.FC = () => {
     });
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus(FormStatus.SUBMITTING);
-    setTimeout(() => {
+
+    try {
+      await createIntakeSubmission(formData);
       setStatus(FormStatus.SUCCESS);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      setStatus(FormStatus.ERROR);
+    }
   };
 
   const handleLogin = () => {
