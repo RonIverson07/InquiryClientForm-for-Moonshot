@@ -13,6 +13,80 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/admin/submissions', async (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN;
+  if (adminToken && req.header('x-admin-token') !== adminToken) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('intake_submissions')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  if (error) {
+    return res.status(500).json({ message: 'Fetch failed', error });
+  }
+
+  const submissions = (data ?? []).map((row) => ({
+    id: row.id,
+    submittedAt: row.created_at,
+
+    fullName: row.full_name ?? '',
+    email: row.email ?? '',
+    phoneNumber: row.phone_number ?? '',
+    companyName: row.company_name ?? '',
+    rolePosition: row.role_position ?? '',
+
+    services: row.services ?? {
+      aiWorkflowAutomation: false,
+      websiteDesignDevelopment: false,
+      softwareDevelopment: false,
+      digitalMarketingGrowth: false,
+      bookkeepingAccounting: false,
+      hrPayrollManagement: false,
+      businessMentorshipConsultation: false,
+    },
+    selectedPackage: row.selected_package ?? '',
+    needsAndGoals: row.needs_and_goals ?? '',
+
+    officeDuration: row.office_duration ?? '',
+    teamSize: row.team_size ?? '',
+    eventType: row.event_type ?? '',
+    expectedAttendees: row.expected_attendees ?? '',
+    preferredDate: row.preferred_date ?? '',
+    currentlyUsingTools: row.currently_using_tools ?? '',
+    mainChallenge: row.main_challenge ?? '',
+
+    referralSource: row.referral_source ?? [],
+    otherReferralSource: row.other_referral_source ?? '',
+    preferredContact: row.preferred_contact ?? '',
+    bestTimeToReach: row.best_time_to_reach ?? '',
+  }));
+
+  return res.json({ submissions });
+});
+
+app.delete('/api/admin/submissions/:id', async (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN;
+  if (adminToken && req.header('x-admin-token') !== adminToken) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ message: 'Missing id' });
+  }
+
+  const { error } = await supabaseAdmin.from('intake_submissions').delete().eq('id', id);
+  if (error) {
+    return res.status(500).json({ message: 'Delete failed', error });
+  }
+
+  return res.json({ ok: true });
+});
+
 app.post('/api/intake', async (req, res) => {
   const parsed = intakeSubmissionSchema.safeParse(req.body);
   if (!parsed.success) {

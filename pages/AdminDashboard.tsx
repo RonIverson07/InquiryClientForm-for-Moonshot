@@ -1,15 +1,44 @@
 
-import React, { useState } from 'react';
-import { ClientFormData, MOCK_SUBMISSIONS } from '../types';
+import React, { useEffect, useState } from 'react';
+import { ClientFormData } from '../types';
 import FormSection from '../components/FormSection';
 import { TextInput, Checkbox, RadioGroup, SelectInput } from '../components/Input';
+import { deleteIntakeSubmission, listIntakeSubmissions } from '../services/intakeSubmissions';
 
 interface AdminDashboardProps {
   onLogout: () => void;
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
-  const [selectedSub, setSelectedSub] = useState<ClientFormData>(MOCK_SUBMISSIONS[0]);
+  const [submissions, setSubmissions] = useState<ClientFormData[]>([]);
+  const [selectedSub, setSelectedSub] = useState<ClientFormData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await listIntakeSubmissions();
+        if (cancelled) return;
+        setSubmissions(data);
+        setSelectedSub((prev) => prev ?? data[0] ?? null);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : 'Failed to load submissions');
+      } finally {
+        if (cancelled) return;
+        setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const packages = [
     "Virtual Office Package — ₱1,999 / month",
     "Co-working Space Standard — ₱4,999 / month",
@@ -49,15 +78,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">User Submissions</h3>
           </div>
           <div className="flex-grow">
-            {MOCK_SUBMISSIONS.map((sub) => (
+            {loading && (
+              <div className="p-5 text-xs text-slate-500">Loading submissions...</div>
+            )}
+            {!loading && error && (
+              <div className="p-5 text-xs text-red-600 break-words">{error}</div>
+            )}
+            {!loading && !error && submissions.length === 0 && (
+              <div className="p-5 text-xs text-slate-500">No submissions yet.</div>
+            )}
+
+            {!loading && !error && submissions.map((sub) => (
               <button
                 key={sub.id}
                 onClick={() => setSelectedSub(sub)}
                 className={`w-full text-left p-5 border-b border-slate-50 transition-all relative ${
-                  selectedSub.id === sub.id ? 'bg-sky-50' : 'hover:bg-slate-50'
+                  selectedSub?.id === sub.id ? 'bg-sky-50' : 'hover:bg-slate-50'
                 }`}
               >
-                {selectedSub.id === sub.id && (
+                {selectedSub?.id === sub.id && (
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#0ea5e9]" />
                 )}
                 <p className="font-bold text-slate-800 text-sm">{sub.fullName}</p>
@@ -76,14 +115,49 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-200/60">
               <div>
                 <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tight">Submission Data</h2>
-                <p className="text-slate-400 text-xs font-medium mt-1 uppercase tracking-widest">Reviewing details for: <span className="text-[#0ea5e9]">{selectedSub.fullName}</span></p>
+                <p className="text-slate-400 text-xs font-medium mt-1 uppercase tracking-widest">Reviewing details for: <span className="text-[#0ea5e9]">{selectedSub?.fullName ?? '—'}</span></p>
               </div>
               <div className="flex space-x-2">
                 <span className="bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-200">Verified</span>
                 <button className="bg-white border border-slate-200 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">Action Item</button>
+                <button
+                  type="button"
+                  disabled={!selectedSub?.id || deleting}
+                  onClick={async () => {
+                    if (!selectedSub?.id) return;
+                    const ok = window.confirm('Delete this submission? This cannot be undone.');
+                    if (!ok) return;
+
+                    try {
+                      setDeleting(true);
+                      setError(null);
+                      await deleteIntakeSubmission(selectedSub.id);
+
+                      setSubmissions((prev) => prev.filter((s) => s.id !== selectedSub.id));
+                      setSelectedSub((prev) => {
+                        if (!prev?.id) return prev;
+                        if (prev.id !== selectedSub.id) return prev;
+                        const remaining = submissions.filter((s) => s.id !== selectedSub.id);
+                        return remaining[0] ?? null;
+                      });
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : 'Failed to delete submission');
+                    } finally {
+                      setDeleting(false);
+                    }
+                  }}
+                  className={`bg-red-50 border border-red-200 text-red-700 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all ${(!selectedSub?.id || deleting) ? 'opacity-60 cursor-not-allowed hover:bg-red-50' : ''}`}
+                >
+                  {deleting ? 'Deleting…' : 'Delete'}
+                </button>
               </div>
             </div>
 
+            {!selectedSub && !loading && !error && (
+              <div className="text-sm text-slate-500">Select a submission from the left.</div>
+            )}
+
+            {selectedSub && (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
               {/* CONTACT INFORMATION - MIRRORING FORM LAYOUT */}
               <FormSection title="Contact Information">
@@ -220,17 +294,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 </div>
               </FormSection>
               
-              <div className="mb-20 pt-10 border-t border-slate-100 flex items-center justify-center space-x-6">
-                <button className="text-[#0ea5e9] text-[10px] font-black uppercase tracking-widest hover:text-sky-700 transition-colors flex items-center space-x-2">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeWidth={2}/></svg>
-                  <span>Export JSON</span>
-                </button>
-                <button className="text-[#0ea5e9] text-[10px] font-black uppercase tracking-widest hover:text-sky-700 transition-colors flex items-center space-x-2">
-                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" strokeWidth={2}/></svg>
-                  <span>Print Report</span>
-                </button>
-              </div>
             </div>
+            )}
           </div>
         </main>
       </div>

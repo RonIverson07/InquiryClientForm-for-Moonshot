@@ -6,9 +6,10 @@ import { TextInput } from '../components/Input';
 interface LoginPageProps {
   onLogin: () => void;
   onBack: () => void;
+  onForgotPassword: () => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, onForgotPassword }) => {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
       <div className="bg-white p-10 rounded-2xl shadow-2xl max-w-md w-full border-t-[6px] border-[#0ea5e9] relative">
@@ -42,6 +43,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack }) => {
           >
             Sign In
           </button>
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="text-slate-400 hover:text-[#0ea5e9] transition-colors text-[11px] font-black uppercase tracking-[0.2em]"
+            >
+              Forgot password?
+            </button>
+          </div>
           <div className="text-center">
             <button 
               type="button"

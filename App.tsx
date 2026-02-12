@@ -4,6 +4,7 @@ import { ClientFormData, FormStatus, AppView } from './types';
 import IntakeForm from './pages/IntakeForm';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
+import PasswordRecoveryPage from './pages/PasswordRecoveryPage';
 import { createIntakeSubmission } from './services/intakeSubmissions';
 
 const App: React.FC = () => {
@@ -91,7 +92,15 @@ const App: React.FC = () => {
   // Router logic
   switch (view) {
     case AppView.LOGIN:
-      return <LoginPage onLogin={handleLogin} onBack={() => setView(AppView.INTAKE_FORM)} />;
+      return (
+        <LoginPage
+          onLogin={handleLogin}
+          onBack={() => setView(AppView.INTAKE_FORM)}
+          onForgotPassword={() => setView(AppView.PASSWORD_RECOVERY)}
+        />
+      );
+    case AppView.PASSWORD_RECOVERY:
+      return <PasswordRecoveryPage onBackToLogin={() => setView(AppView.LOGIN)} />;
     case AppView.ADMIN_DASHBOARD:
       return <AdminDashboard onLogout={handleLogout} />;
     case AppView.INTAKE_FORM:

@@ -48,7 +48,8 @@ export enum FormStatus {
 export enum AppView {
   INTAKE_FORM = 'INTAKE_FORM',
   LOGIN = 'LOGIN',
-  ADMIN_DASHBOARD = 'ADMIN_DASHBOARD'
+  ADMIN_DASHBOARD = 'ADMIN_DASHBOARD',
+  PASSWORD_RECOVERY = 'PASSWORD_RECOVERY'
 }
 
 export const MOCK_SUBMISSIONS: ClientFormData[] = [
