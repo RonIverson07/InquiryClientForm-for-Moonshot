@@ -11,11 +11,13 @@ export interface ClientFormData {
 
   // Services
   services: {
-    workingSpace: boolean;
-    virtualOffice: boolean;
-    eventSpace: boolean;
-    aiAutomation: boolean;
+    aiWorkflowAutomation: boolean;
+    websiteDesignDevelopment: boolean;
     softwareDevelopment: boolean;
+    digitalMarketingGrowth: boolean;
+    bookkeepingAccounting: boolean;
+    hrPayrollManagement: boolean;
+    businessMentorshipConsultation: boolean;
   };
   selectedPackage: string;
   needsAndGoals?: string;
@@ -59,11 +61,13 @@ export const MOCK_SUBMISSIONS: ClientFormData[] = [
     companyName: 'Studio Amihan',
     rolePosition: 'Founder',
     services: {
-      workingSpace: true,
-      virtualOffice: false,
-      eventSpace: true,
-      aiAutomation: true,
+      aiWorkflowAutomation: true,
+      websiteDesignDevelopment: false,
       softwareDevelopment: false,
+      digitalMarketingGrowth: true,
+      bookkeepingAccounting: false,
+      hrPayrollManagement: false,
+      businessMentorshipConsultation: true,
     },
     selectedPackage: 'StartupLab Pro — ₱9,999 / month',
     needsAndGoals: 'Looking for a premium workflow automation setup.',
@@ -87,11 +91,13 @@ export const MOCK_SUBMISSIONS: ClientFormData[] = [
     companyName: 'Santos Logistics',
     rolePosition: 'Operations Manager',
     services: {
-      workingSpace: false,
-      virtualOffice: true,
-      eventSpace: false,
-      aiAutomation: true,
+      aiWorkflowAutomation: true,
+      websiteDesignDevelopment: true,
       softwareDevelopment: true,
+      digitalMarketingGrowth: false,
+      bookkeepingAccounting: false,
+      hrPayrollManagement: true,
+      businessMentorshipConsultation: false,
     },
     selectedPackage: 'Virtual Office Package — ₱1,999 / month',
     needsAndGoals: 'Interested in a virtual office for our main registration.',

@@ -100,13 +100,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
               {/* SERVICES - MIRRORING FORM LAYOUT */}
               <FormSection title="Services">
-                <p className="text-slate-500 text-sm mb-6 font-medium">Services interested in (Client Selections)</p>
+                <p className="text-slate-500 text-sm mb-6 font-medium">Services you're interested in (check all that apply)</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 mb-12">
-                  <Checkbox label="Working Space" checked={selectedSub.services.workingSpace} disabled />
-                  <Checkbox label="Virtual Office" checked={selectedSub.services.virtualOffice} disabled />
-                  <Checkbox label="Event Space" checked={selectedSub.services.eventSpace} disabled />
-                  <Checkbox label="AI Workflow Automation" checked={selectedSub.services.aiAutomation} disabled />
-                  <Checkbox label="Software Development" checked={selectedSub.services.softwareDevelopment} disabled />
+                  <Checkbox label="AI Workflow & Automation" checked={selectedSub.services.aiWorkflowAutomation} disabled />
+                  <Checkbox label="Website Design & Development" checked={selectedSub.services.websiteDesignDevelopment} disabled />
+                  <Checkbox label="Software Development (web apps, internal systems, custom solutions)" checked={selectedSub.services.softwareDevelopment} disabled />
+                  <Checkbox label="Digital Marketing & Growth Campaigns" checked={selectedSub.services.digitalMarketingGrowth} disabled />
+                  <Checkbox label="Bookkeeping & Accounting Services" checked={selectedSub.services.bookkeepingAccounting} disabled />
+                  <Checkbox label="HR & Payroll Management" checked={selectedSub.services.hrPayrollManagement} disabled />
+                  <Checkbox label="Business Mentorship & Strategic Consultation" checked={selectedSub.services.businessMentorshipConsultation} disabled />
                 </div>
                 
                 <div className="space-y-10">

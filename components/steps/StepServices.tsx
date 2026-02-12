@@ -25,11 +25,13 @@ const StepServices: React.FC<StepProps> = ({ formData, onServiceToggle, onInputC
       <FormSection title="Services">
         <p className="text-slate-500 text-sm mb-8 font-medium">Services you're interested in (check all that apply)</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-4 mb-12">
-          <Checkbox label="Working Space" checked={formData.services.workingSpace} onChange={() => onServiceToggle('workingSpace')} />
-          <Checkbox label="Virtual Office" checked={formData.services.virtualOffice} onChange={() => onServiceToggle('virtualOffice')} />
-          <Checkbox label="Event Space" checked={formData.services.eventSpace} onChange={() => onServiceToggle('eventSpace')} />
-          <Checkbox label="AI Workflow Automation" checked={formData.services.aiAutomation} onChange={() => onServiceToggle('aiAutomation')} />
-          <Checkbox label="Software Development" checked={formData.services.softwareDevelopment} onChange={() => onServiceToggle('softwareDevelopment')} />
+          <Checkbox label="AI Workflow & Automation" checked={formData.services.aiWorkflowAutomation} onChange={() => onServiceToggle('aiWorkflowAutomation')} />
+          <Checkbox label="Website Design & Development" checked={formData.services.websiteDesignDevelopment} onChange={() => onServiceToggle('websiteDesignDevelopment')} />
+          <Checkbox label="Software Development (web apps, internal systems, custom solutions)" checked={formData.services.softwareDevelopment} onChange={() => onServiceToggle('softwareDevelopment')} />
+          <Checkbox label="Digital Marketing & Growth Campaigns" checked={formData.services.digitalMarketingGrowth} onChange={() => onServiceToggle('digitalMarketingGrowth')} />
+          <Checkbox label="Bookkeeping & Accounting Services" checked={formData.services.bookkeepingAccounting} onChange={() => onServiceToggle('bookkeepingAccounting')} />
+          <Checkbox label="HR & Payroll Management" checked={formData.services.hrPayrollManagement} onChange={() => onServiceToggle('hrPayrollManagement')} />
+          <Checkbox label="Business Mentorship & Strategic Consultation" checked={formData.services.businessMentorshipConsultation} onChange={() => onServiceToggle('businessMentorshipConsultation')} />
         </div>
         
         <div className="space-y-10">
