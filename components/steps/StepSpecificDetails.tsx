@@ -13,11 +13,38 @@ interface StepProps {
 
 const StepSpecificDetails: React.FC<StepProps> = ({ formData, onInputChange, onNext, onPrev }) => {
   const teamSizeOptions = [
-    { value: '1', label: '1 (Individual)' },
-    { value: '2-5', label: '2-5 members' },
-    { value: '6-10', label: '6-10 members' },
-    { value: '11-20', label: '11-20 members' },
-    { value: '20+', label: '20+ members' }
+    { value: '1', label: 'Solo (1 member)' },
+    { value: '2-5', label: '2–5 members' },
+    { value: '6-10', label: '6–10 members' },
+    { value: '11-20', label: '11–20 members' },
+    { value: '21-50', label: '21–50 members' },
+    { value: '51-100', label: '51–100 members' },
+    { value: '100+', label: '100+ members' },
+  ];
+
+  const eventTypeOptions = [
+    { value: 'Workshop', label: 'Workshop' },
+    { value: 'Seminar', label: 'Seminar' },
+    { value: 'Training Session', label: 'Training Session' },
+    { value: 'Business Meeting', label: 'Business Meeting' },
+    { value: 'Corporate Event', label: 'Corporate Event' },
+    { value: 'Networking Event', label: 'Networking Event' },
+    { value: 'Product Launch', label: 'Product Launch' },
+    { value: 'Conference', label: 'Conference' },
+    { value: 'Team Building Activity', label: 'Team Building Activity' },
+    { value: 'Webinar', label: 'Webinar' },
+    { value: 'Private Event', label: 'Private Event' },
+    { value: 'Other', label: 'Other' },
+  ];
+
+  const expectedAttendeesOptions = [
+    { value: '1-5', label: '1–5 attendees' },
+    { value: '6-10', label: '6–10 attendees' },
+    { value: '11-20', label: '11–20 attendees' },
+    { value: '21-50', label: '21–50 attendees' },
+    { value: '51-100', label: '51–100 attendees' },
+    { value: '101-200', label: '101–200 attendees' },
+    { value: '200+', label: '200+ attendees' },
   ];
 
   return (
@@ -53,8 +80,22 @@ const StepSpecificDetails: React.FC<StepProps> = ({ formData, onInputChange, onN
               Event Space
             </h3>
             <div className="space-y-8 px-1">
-              <TextInput label="Type of Event" placeholder="e.g. Workshop, Seminar" name="eventType" value={formData.eventType} onChange={onInputChange} />
-              <TextInput label="Expected Attendees" placeholder="e.g. 50-100" name="expectedAttendees" value={formData.expectedAttendees} onChange={onInputChange} />
+              <SelectInput
+                label="Type of Event"
+                placeholder="Select an option"
+                name="eventType"
+                value={formData.eventType}
+                onChange={onInputChange}
+                options={eventTypeOptions}
+              />
+              <SelectInput
+                label="Expected Attendees"
+                placeholder="Select an option"
+                name="expectedAttendees"
+                value={formData.expectedAttendees}
+                onChange={onInputChange}
+                options={expectedAttendeesOptions}
+              />
               <TextInput label="Preferred Date" type="date" name="preferredDate" value={formData.preferredDate} onChange={onInputChange} />
             </div>
           </div>

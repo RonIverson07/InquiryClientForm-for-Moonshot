@@ -7,10 +7,14 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const TextInput: React.FC<InputProps> = ({ label, optional, className = "", ...props }) => {
+  const showRequired = !!props.required && !optional;
+
   return (
     <div className={`flex flex-col space-y-1 ${className}`}>
       <label className="text-sm font-medium text-slate-700">
-        {label} {optional && <span className="text-slate-400 font-normal">(Optional)</span>}
+        {label}
+        {showRequired && <span className="text-red-500"> *</span>}
+        {optional && <span className="text-slate-400 font-normal"> (Optional)</span>}
       </label>
       <input
         {...props}
@@ -40,11 +44,14 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 }) => {
   // Combine native disabled with our custom readOnly prop as select doesn't support readOnly
   const isSelectDisabled = props.disabled || readOnly;
+  const showRequired = !!props.required && !optional;
 
   return (
     <div className={`flex flex-col space-y-1 ${className}`}>
       <label className="text-sm font-medium text-slate-700">
-        {label} {optional && <span className="text-slate-400 font-normal">(Optional)</span>}
+        {label}
+        {showRequired && <span className="text-red-500"> *</span>}
+        {optional && <span className="text-slate-400 font-normal"> (Optional)</span>}
       </label>
       <select
         {...props}
@@ -71,9 +78,9 @@ interface CheckboxProps {
 
 export const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange, disabled }) => {
   return (
-    <label className={`flex items-center space-x-3 group ${disabled ? 'cursor-default' : 'cursor-pointer'}`}>
+    <label className={`flex items-start space-x-3 py-px group ${disabled ? 'cursor-default' : 'cursor-pointer'}`}>
       <div 
-        className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+        className={`w-6 h-6 mt-0.5 flex-shrink-0 rounded border flex items-center justify-center transition-colors ${
           checked ? 'bg-[#0ea5e9] border-[#0ea5e9]' : 'bg-white border-slate-300'
         } ${!disabled ? 'group-hover:border-[#0ea5e9]' : ''}`}
         onClick={(e) => {
@@ -83,12 +90,12 @@ export const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange, di
         }}
       >
         {checked && (
-          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         )}
       </div>
-      <span className={`text-sm font-medium transition-colors select-none ${checked ? 'text-slate-900' : 'text-slate-500'} ${!disabled ? 'group-hover:text-slate-900' : ''}`}>
+      <span className={`text-sm font-medium leading-5 transition-colors select-none ${checked ? 'text-slate-900' : 'text-slate-500'} ${!disabled ? 'group-hover:text-slate-900' : ''}`}>
         {label}
       </span>
     </label>
@@ -101,15 +108,23 @@ export const RadioGroup: React.FC<{
   value: string;
   onChange?: (val: string) => void;
   disabled?: boolean;
-}> = ({ label, options, value, onChange, disabled }) => {
+  required?: boolean;
+  optional?: boolean;
+}> = ({ label, options, value, onChange, disabled, required, optional }) => {
+  const showRequired = !!required && !optional;
+
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium text-slate-700">{label}</p>
+      <p className="text-sm font-medium text-slate-700">
+        {label}
+        {showRequired && <span className="text-red-500"> *</span>}
+        {optional && <span className="text-slate-400 font-normal"> (Optional)</span>}
+      </p>
       <div className="flex flex-wrap gap-6">
         {options.map((opt) => (
-          <label key={opt} className={`flex items-center space-x-2 group ${disabled ? 'cursor-default' : 'cursor-pointer'}`}>
+          <label key={opt} className={`flex items-start space-x-3 py-px group ${disabled ? 'cursor-default' : 'cursor-pointer'}`}>
             <div 
-              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+              className={`w-6 h-6 mt-0.5 flex-shrink-0 rounded-full border-2 flex items-center justify-center transition-colors ${
                 value === opt ? 'border-[#0ea5e9]' : 'border-slate-300'
               } ${!disabled ? 'group-hover:border-[#0ea5e9]' : ''}`}
               onClick={() => {
@@ -117,9 +132,9 @@ export const RadioGroup: React.FC<{
                 onChange?.(opt);
               }}
             >
-              {value === opt && <div className="w-2.5 h-2.5 rounded-full bg-[#0ea5e9]" />}
+              {value === opt && <div className="w-3 h-3 rounded-full bg-[#0ea5e9]" />}
             </div>
-            <span className={`text-sm select-none transition-colors ${value === opt ? 'text-slate-900 font-bold' : 'text-slate-500'} ${!disabled ? 'group-hover:text-slate-900' : ''}`}>{opt}</span>
+            <span className={`text-sm leading-6 select-none transition-colors ${value === opt ? 'text-slate-900 font-bold' : 'text-slate-500'} ${!disabled ? 'group-hover:text-slate-900' : ''}`}>{opt}</span>
           </label>
         ))}
       </div>

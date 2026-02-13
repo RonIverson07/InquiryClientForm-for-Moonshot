@@ -47,11 +47,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   ];
 
   const teamSizeOptions = [
-    { value: '1', label: '1 (Individual)' },
-    { value: '2-5', label: '2-5 members' },
-    { value: '6-10', label: '6-10 members' },
-    { value: '11-20', label: '11-20 members' },
-    { value: '20+', label: '20+ members' }
+    { value: '1', label: 'Solo (1 member)' },
+    { value: '2-5', label: '2–5 members' },
+    { value: '6-10', label: '6–10 members' },
+    { value: '11-20', label: '11–20 members' },
+    { value: '21-50', label: '21–50 members' },
+    { value: '51-100', label: '51–100 members' },
+    { value: '100+', label: '100+ members' },
   ];
 
   const handleDeleteSelected = async () => {

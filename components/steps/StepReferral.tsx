@@ -1,7 +1,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { ClientFormData, FormStatus } from '../../types';
-import { TextInput, Checkbox, RadioGroup } from '../Input';
+import { TextInput, Checkbox, RadioGroup, SelectInput } from '../Input';
 import FormSection from '../FormSection';
 
 interface StepProps {
@@ -16,8 +16,25 @@ interface StepProps {
 const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle, onInputChange, onPrev, onSubmit }) => {
   const [showErrors, setShowErrors] = useState(false);
 
+  const bestTimeOptions = [
+    { value: 'Anytime', label: 'Anytime' },
+    { value: 'Morning (8:00 AM – 12:00 PM)', label: 'Morning (8:00 AM – 12:00 PM)' },
+    { value: 'Afternoon (12:00 PM – 5:00 PM)', label: 'Afternoon (12:00 PM – 5:00 PM)' },
+    { value: 'Evening (5:00 PM – 8:00 PM)', label: 'Evening (5:00 PM – 8:00 PM)' },
+    { value: 'Weekdays Only', label: 'Weekdays Only' },
+    { value: 'Weekends Only', label: 'Weekends Only' },
+  ];
+
   const errors = useMemo(() => {
-    const nextErrors: Partial<Record<'bestTimeToReach' | 'otherReferralSource', string>> = {};
+    const nextErrors: Partial<Record<'referralSource' | 'preferredContact' | 'bestTimeToReach' | 'otherReferralSource', string>> = {};
+
+    if (!formData.referralSource.length) {
+      nextErrors.referralSource = 'Please select at least one referral source.';
+    }
+
+    if (!formData.preferredContact.trim()) {
+      nextErrors.preferredContact = 'Preferred Contact Method is required.';
+    }
 
     if (!formData.bestTimeToReach.trim()) {
       nextErrors.bestTimeToReach = 'Best Time to Reach You is required.';
@@ -46,7 +63,10 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
       <FormSection title="Referral & Communication">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
-            <p className="text-sm font-medium text-slate-700 mb-6">How did you hear about us?</p>
+            <p className="text-sm font-medium text-slate-700 mb-6">
+              How did you hear about us?
+              <span className="text-red-500"> *</span>
+            </p>
             <div className="grid grid-cols-2 gap-y-6">
               <Checkbox label="Walk-in" checked={formData.referralSource.includes('Walk-in')} onChange={() => onReferralToggle('Walk-in')} />
               <Checkbox label="Website" checked={formData.referralSource.includes('Website')} onChange={() => onReferralToggle('Website')} />
@@ -57,6 +77,9 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
                 <Checkbox label="Other" checked={formData.referralSource.includes('Other')} onChange={() => onReferralToggle('Other')} />
               </div>
             </div>
+            {showErrors && errors.referralSource && (
+              <p className="mt-4 text-xs text-red-600">{errors.referralSource}</p>
+            )}
             {formData.referralSource.includes('Other') && (
               <>
                 <input 
@@ -80,16 +103,25 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
               options={["Email", "Phone", "Messenger"]} 
               value={formData.preferredContact} 
               onChange={(val) => onInputChange({ target: { name: 'preferredContact', value: val } } as any)} 
-            />
-            <TextInput 
-              label="Best Time to Reach You" 
-              placeholder="e.g. 2 PM, Morning, Anytime" 
-              name="bestTimeToReach" 
-              value={formData.bestTimeToReach} 
-              onChange={onInputChange} 
               required
-              error={showErrors ? errors.bestTimeToReach : undefined}
             />
+            {showErrors && errors.preferredContact && (
+              <p className="-mt-6 text-xs text-red-600">{errors.preferredContact}</p>
+            )}
+            <div>
+              <SelectInput
+                label="Best Time to Reach You"
+                name="bestTimeToReach"
+                value={formData.bestTimeToReach}
+                onChange={onInputChange as any}
+                options={bestTimeOptions}
+                required
+                placeholder="Select an option"
+              />
+              {showErrors && errors.bestTimeToReach && (
+                <p className="mt-2 text-xs text-red-600">{errors.bestTimeToReach}</p>
+              )}
+            </div>
           </div>
         </div>
 

@@ -39,7 +39,7 @@ export const intakeSubmissionSchema = z
       .string()
       .optional()
       .nullable()
-      .refine((val) => !val || /^\d+$/.test(val), 'Expected Attendees must be numbers only'),
+      .refine((val) => !val || /^(\d+|\d+-\d+|\d+\+)$/.test(val), 'Expected Attendees must be numbers only'),
     preferredDate: z.string().optional().nullable(),
 
     currentlyUsingTools: z.enum(['yes', 'no', '']).optional(),

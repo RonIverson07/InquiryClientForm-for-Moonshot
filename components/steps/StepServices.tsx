@@ -41,7 +41,7 @@ const StepServices: React.FC<StepProps> = ({ formData, onServiceToggle, onInputC
           Services you're interested in (check all that apply)
           <span className="text-red-500 font-black"> *</span>
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-4 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 mb-12">
           <Checkbox label="AI Workflow & Automation" checked={formData.services.aiWorkflowAutomation} onChange={() => onServiceToggle('aiWorkflowAutomation')} />
           <Checkbox label="Website Design & Development" checked={formData.services.websiteDesignDevelopment} onChange={() => onServiceToggle('websiteDesignDevelopment')} />
           <Checkbox label="Software Development (web apps, internal systems, custom solutions)" checked={formData.services.softwareDevelopment} onChange={() => onServiceToggle('softwareDevelopment')} />
