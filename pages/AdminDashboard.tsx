@@ -251,7 +251,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">Admin Console</h1>
         </div>
         <div className="flex items-center space-x-4">
-          <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">Live Management Mode</span>
           <button 
             onClick={onLogout}
             className="px-5 py-2 bg-slate-900 text-white rounded-md text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-lg"
