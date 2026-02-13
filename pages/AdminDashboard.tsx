@@ -19,6 +19,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [deleting, setDeleting] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const submissionPdfRef = useRef<HTMLDivElement | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,11 +61,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     { value: '100+', label: '100+ members' },
   ];
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = () => {
     if (!selectedSub?.id) return;
-    const ok = window.confirm('Delete this submission? This cannot be undone.');
-    if (!ok) return;
+    setShowDeleteModal(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!selectedSub?.id) return;
     try {
       setDeleting(true);
       setError(null);
@@ -83,6 +86,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       setError(err instanceof Error ? err.message : 'Failed to delete submission');
     } finally {
       setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -463,6 +467,44 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </div>
         </main>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-slate-900/40"
+            onClick={() => {
+              if (deleting) return;
+              setShowDeleteModal(false);
+            }}
+          />
+          <div className="relative w-[92%] max-w-md rounded-2xl bg-white shadow-2xl border border-slate-200">
+            <div className="p-6">
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">Confirm Delete</h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Delete this submission? This cannot be undone.
+              </p>
+            </div>
+            <div className="px-6 pb-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setShowDeleteModal(false)}
+                className={`px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-colors ${deleting ? 'opacity-60 cursor-not-allowed' : ''}`}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleConfirmDelete}
+                className={`px-5 py-2.5 rounded-xl bg-[#0ea5e9] text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-sky-200 hover:bg-sky-600 transition-colors ${deleting ? 'opacity-70 cursor-not-allowed hover:bg-[#0ea5e9]' : ''}`}
+              >
+                {deleting ? 'Deleting…' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
