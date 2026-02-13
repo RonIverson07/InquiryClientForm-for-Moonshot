@@ -84,7 +84,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     <div className="min-h-screen flex flex-col bg-slate-50">
       <header className="bg-white border-b border-slate-200 py-3 px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
         <div className="flex items-center space-x-3">
-          <div className="bg-[#0ea5e9] text-white p-1.5 rounded-lg font-bold text-lg">SL</div>
+          <img
+            src="/logo.jpg"
+            alt="StartupLab"
+            className="h-10 w-10 rounded-lg object-contain bg-white"
+          />
           <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">Admin Console</h1>
         </div>
         <div className="flex items-center space-x-4">

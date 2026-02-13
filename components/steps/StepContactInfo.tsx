@@ -20,8 +20,21 @@ const StepContactInfo: React.FC<StepProps> = ({ formData, onInputChange, onNext 
 
     if (!formData.email.trim()) {
       nextErrors.email = 'Email is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      nextErrors.email = 'Enter a valid email address.';
+    } else {
+      const value = formData.email.trim();
+      const match = value.match(/^([^\s@]+)@([^\s@]+)$/);
+      if (!match) {
+        nextErrors.email = 'Enter a valid email address.';
+      } else {
+        const domain = match[2].toLowerCase();
+        const parts = domain.split('.').filter(Boolean);
+        const tld = parts.at(-1) ?? '';
+        const sld = parts.length >= 2 ? parts.at(-2) ?? '' : '';
+
+        if (parts.length < 2 || tld.length < 2 || sld.length < 2) {
+          nextErrors.email = 'Enter a valid email address.';
+        }
+      }
     }
 
     if (!formData.phoneNumber.trim()) {

@@ -20,9 +20,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, onForgotPassword
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
       <div className="bg-white p-10 rounded-2xl shadow-2xl max-w-md w-full border-t-[6px] border-[#0ea5e9] relative">
         <div className="text-center mb-10">
-          <div className="bg-[#0ea5e9] text-white w-20 h-20 rounded-2xl font-black text-4xl flex items-center justify-center mx-auto mb-6 shadow-md">
-            SL
-          </div>
+          <img
+            src="/logo.jpg"
+            alt="StartupLab"
+            className="w-20 h-20 rounded-2xl object-contain bg-white mx-auto mb-6 shadow-md"
+          />
           <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tight mb-2">Admin Login</h2>
           <p className="text-slate-400 text-sm font-medium">Access StartupLab Management Console</p>
         </div>

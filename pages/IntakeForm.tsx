@@ -82,7 +82,11 @@ const IntakeForm: React.FC<IntakeFormProps> = ({
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50 py-4 px-6 md:px-12">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center space-x-3 mb-4 md:mb-0">
-            <div className="bg-[#0ea5e9] text-white p-2 rounded-lg font-bold text-2xl tracking-tighter">SL</div>
+            <img
+              src="/logo.jpg"
+              alt="StartupLab"
+              className="h-12 w-12 rounded-lg object-contain bg-white"
+            />
             <div>
               <h1 className="text-2xl font-black text-slate-800 tracking-tight leading-none uppercase">StartupLab</h1>
               <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Business Center</p>
@@ -96,7 +100,7 @@ const IntakeForm: React.FC<IntakeFormProps> = ({
               onClick={() => onSwitchView(AppView.LOGIN)}
               className="px-6 py-2 bg-slate-100 text-slate-600 rounded-full text-xs font-black uppercase tracking-widest hover:bg-[#0ea5e9] hover:text-white transition-all shadow-sm"
             >
-              Staff Login
+              Login
             </button>
           </div>
         </div>
@@ -118,7 +122,7 @@ const IntakeForm: React.FC<IntakeFormProps> = ({
           <div className="flex items-center space-x-2 text-white">
             <span className="font-bold text-lg uppercase tracking-tight">StartupLab</span>
           </div>
-          <p>© 2024 StartupLab Business Center. All rights reserved.</p>
+          <p>© 2026 StartupLab Business Center. All rights reserved.</p>
           <div className="flex space-x-6">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
