@@ -1,20 +1,99 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 
 import { intakeSubmissionSchema } from './validation.mjs';
 import { supabaseAdmin } from './supabaseAdmin.mjs';
 
+dotenv.config();
+
 const app = express();
 
-app.use(cors({ origin: ['http://localhost:3000'], credentials: true }));
+app.use(
+  cors({
+    origin: ['http://localhost:5173'], // Vite default
+    credentials: true,
+  })
+);
+
 app.use(express.json({ limit: '1mb' }));
 
+/* ===============================
+   EMAIL VALIDATION HELPER
+================================= */
+const validateEmail = (email) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+};
+
+/* ===============================
+   HEALTH CHECK
+================================= */
 app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
 
+/* ===============================
+   ADMIN LOGIN
+================================= */
+app.post('/api/admin/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password required' });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({ message: 'Invalid email format' });
+  }
+
+  const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    return res.status(401).json({ message: error.message });
+  }
+
+  return res.json({
+    message: 'Login successful',
+    user: data.user,
+    session: data.session,
+  });
+});
+
+/* ===============================
+   ADMIN FORGOT PASSWORD
+================================= */
+app.post('/api/admin/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({ message: 'Invalid email format' });
+  }
+
+  const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
+    redirectTo: 'http://localhost:5173/password-reset',
+  });
+
+  if (error) {
+    return res.status(400).json({ message: error.message });
+  }
+
+  return res.json({ message: 'Password reset email sent' });
+});
+
+/* ===============================
+   ADMIN FETCH SUBMISSIONS
+================================= */
 app.get('/api/admin/submissions', async (req, res) => {
   const adminToken = process.env.ADMIN_TOKEN;
+
   if (adminToken && req.header('x-admin-token') !== adminToken) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
@@ -39,15 +118,7 @@ app.get('/api/admin/submissions', async (req, res) => {
     companyName: row.company_name ?? '',
     rolePosition: row.role_position ?? '',
 
-    services: row.services ?? {
-      aiWorkflowAutomation: false,
-      websiteDesignDevelopment: false,
-      softwareDevelopment: false,
-      digitalMarketingGrowth: false,
-      bookkeepingAccounting: false,
-      hrPayrollManagement: false,
-      businessMentorshipConsultation: false,
-    },
+    services: row.services ?? {},
     selectedPackage: row.selected_package ?? '',
     needsAndGoals: row.needs_and_goals ?? '',
 
@@ -68,18 +139,27 @@ app.get('/api/admin/submissions', async (req, res) => {
   return res.json({ submissions });
 });
 
+/* ===============================
+   ADMIN DELETE SUBMISSION
+================================= */
 app.delete('/api/admin/submissions/:id', async (req, res) => {
   const adminToken = process.env.ADMIN_TOKEN;
+
   if (adminToken && req.header('x-admin-token') !== adminToken) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
   const { id } = req.params;
+
   if (!id) {
     return res.status(400).json({ message: 'Missing id' });
   }
 
-  const { error } = await supabaseAdmin.from('intake_submissions').delete().eq('id', id);
+  const { error } = await supabaseAdmin
+    .from('intake_submissions')
+    .delete()
+    .eq('id', id);
+
   if (error) {
     return res.status(500).json({ message: 'Delete failed', error });
   }
@@ -87,8 +167,12 @@ app.delete('/api/admin/submissions/:id', async (req, res) => {
   return res.json({ ok: true });
 });
 
+/* ===============================
+   INTAKE SUBMISSION
+================================= */
 app.post('/api/intake', async (req, res) => {
   const parsed = intakeSubmissionSchema.safeParse(req.body);
+
   if (!parsed.success) {
     return res.status(400).json({
       message: 'Validation failed',
@@ -126,7 +210,10 @@ app.post('/api/intake', async (req, res) => {
     best_time_to_reach: data.bestTimeToReach,
   };
 
-  const { error } = await supabaseAdmin.from('intake_submissions').insert(payload);
+  const { error } = await supabaseAdmin
+    .from('intake_submissions')
+    .insert(payload);
+
   if (error) {
     return res.status(500).json({ message: 'Insert failed', error });
   }
@@ -134,7 +221,11 @@ app.post('/api/intake', async (req, res) => {
   return res.status(201).json({ ok: true });
 });
 
+/* ===============================
+   SERVER START
+================================= */
 const port = process.env.PORT ? Number(process.env.PORT) : 3001;
+
 app.listen(port, () => {
   console.log(`Backend listening on http://localhost:${port}`);
 });
