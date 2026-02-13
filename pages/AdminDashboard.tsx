@@ -21,6 +21,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const submissionPdfRef = useRef<HTMLDivElement | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const formatSubmittedAt = (val?: string) => {
+    if (!val) return '—';
+    const d = new Date(val);
+    if (Number.isNaN(d.getTime())) return val;
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      day: '2-digit',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(d);
+  };
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -277,7 +291,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 <p className="font-bold text-slate-800 text-sm">{sub.fullName}</p>
                 <p className="text-xs text-slate-500 truncate mt-0.5">{sub.email}</p>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-[9px] text-slate-400 uppercase font-black tracking-tighter">{sub.submittedAt}</span>
+                  <span className="text-[9px] text-slate-400 uppercase font-black tracking-tighter">{formatSubmittedAt(sub.submittedAt)}</span>
                   <span className="text-[8px] bg-[#0ea5e9]/10 text-[#0ea5e9] px-1.5 py-0.5 rounded font-black uppercase">Active</span>
                 </div>
               </button>
