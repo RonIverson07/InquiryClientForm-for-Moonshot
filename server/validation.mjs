@@ -32,7 +32,7 @@ export const intakeSubmissionSchema = z
       .string()
       .optional()
       .nullable()
-      .refine((val) => !val || /^\d+$/.test(val), 'Team Size must be numbers only'),
+      .refine((val) => !val || /^(\d+|\d+-\d+|\d+\+)$/.test(val), 'Team Size must be numbers only'),
 
     eventType: z.string().optional().nullable(),
     expectedAttendees: z
