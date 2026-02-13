@@ -1,9 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ClientFormData } from '../types';
 import FormSection from '../components/FormSection';
 import { TextInput, Checkbox, RadioGroup, SelectInput } from '../components/Input';
 import { deleteIntakeSubmission, listIntakeSubmissions } from '../services/intakeSubmissions';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -15,6 +17,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const submissionPdfRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +83,141 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       setError(err instanceof Error ? err.message : 'Failed to delete submission');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleSaveAsPdf = async () => {
+    if (!selectedSub?.id) return;
+    const el = submissionPdfRef.current;
+    if (!el) return;
+
+    try {
+      setExportingPdf(true);
+      setError(null);
+
+      if (document?.fonts?.ready) {
+        await document.fonts.ready;
+      }
+
+      const rect = el.getBoundingClientRect();
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'fixed';
+      wrapper.style.left = '0';
+      wrapper.style.top = '0';
+      wrapper.style.width = `${Math.ceil(rect.width)}px`;
+      wrapper.style.background = '#ffffff';
+      wrapper.style.zIndex = '-1';
+      wrapper.style.opacity = '0';
+      wrapper.style.pointerEvents = 'none';
+
+      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+
+      const addCanvasToPdf = (canvas: HTMLCanvasElement, opts: { startNewPage: boolean }) => {
+        const imgWidth = pageWidth - margin * 2;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        const imgData = canvas.toDataURL('image/png');
+        let heightLeft = imgHeight;
+        let position = margin;
+
+        if (opts.startNewPage) {
+          pdf.addPage();
+        }
+
+        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight - margin * 2;
+
+        while (heightLeft > 0) {
+          pdf.addPage();
+          position = margin - (imgHeight - heightLeft);
+          pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight - margin * 2;
+        }
+      };
+
+      const captureNode = async (node: HTMLElement) => {
+        const canvas = await html2canvas(node, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          logging: false,
+        });
+        return canvas;
+      };
+
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.style.width = `${Math.ceil(rect.width)}px`;
+      clone.style.maxWidth = `${Math.ceil(rect.width)}px`;
+      clone.style.background = '#ffffff';
+      clone.style.padding = '24px';
+
+      const labelEls = Array.from(clone.querySelectorAll('label'));
+      const bestTimeLabel = labelEls.find((n) => (n.textContent || '').trim() === 'Best Time to Reach');
+      const bestTimeInput = bestTimeLabel?.parentElement?.querySelector('input') as HTMLInputElement | null;
+      if (bestTimeInput) {
+        const replacement = document.createElement('div');
+        replacement.textContent = bestTimeInput.value;
+        replacement.style.boxSizing = 'border-box';
+        replacement.style.width = '100%';
+        replacement.style.color = '#0f172a';
+        replacement.style.background = '#f8fafc';
+        replacement.style.border = '1px solid #e2e8f0';
+        replacement.style.borderRadius = '0.375rem';
+        replacement.style.paddingLeft = '1rem';
+        replacement.style.paddingRight = '1rem';
+        replacement.style.paddingTop = '0.7rem';
+        replacement.style.paddingBottom = '0.7rem';
+        replacement.style.fontSize = '1rem';
+        replacement.style.lineHeight = '1.5rem';
+
+        bestTimeInput.replaceWith(replacement);
+      }
+
+      const sections = Array.from(clone.querySelectorAll('[data-pdf-section]')) as HTMLElement[];
+      const page1 = document.createElement('div');
+      page1.style.width = `${Math.ceil(rect.width)}px`;
+      page1.style.maxWidth = `${Math.ceil(rect.width)}px`;
+      page1.style.background = '#ffffff';
+
+      const page2 = document.createElement('div');
+      page2.style.width = `${Math.ceil(rect.width)}px`;
+      page2.style.maxWidth = `${Math.ceil(rect.width)}px`;
+      page2.style.background = '#ffffff';
+
+      const page1Keys = new Set(['contact', 'services']);
+      for (const section of sections) {
+        const key = section.getAttribute('data-pdf-section') || '';
+        if (page1Keys.has(key)) {
+          page1.appendChild(section);
+        } else {
+          page2.appendChild(section);
+        }
+      }
+
+      wrapper.appendChild(page1);
+      wrapper.appendChild(page2);
+      document.body.appendChild(wrapper);
+
+      const canvas1 = await captureNode(page1);
+      const canvas2 = await captureNode(page2);
+
+      document.body.removeChild(wrapper);
+
+      addCanvasToPdf(canvas1, { startNewPage: false });
+      addCanvasToPdf(canvas2, { startNewPage: true });
+
+      const safeName = (selectedSub.fullName || 'submission')
+        .trim()
+        .replace(/[^a-z0-9\-_. ]/gi, '')
+        .replace(/\s+/g, '_');
+      pdf.save(`submission_${safeName}_${selectedSub.id}.pdf`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to export PDF');
+    } finally {
+      setExportingPdf(false);
     }
   };
 
@@ -153,6 +292,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 <span className="bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-200">Verified</span>
                 <button
                   type="button"
+                  disabled={!selectedSub?.id || exportingPdf}
+                  onClick={handleSaveAsPdf}
+                  className={`bg-white border border-slate-200 text-slate-800 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all ${(!selectedSub?.id || exportingPdf) ? 'opacity-60 cursor-not-allowed hover:bg-white' : ''}`}
+                >
+                  {exportingPdf ? 'Saving…' : 'Save as PDF'}
+                </button>
+                <button
+                  type="button"
                   disabled={!selectedSub?.id || deleting}
                   onClick={handleDeleteSelected}
                   className={`bg-red-50 border border-red-200 text-red-700 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all ${(!selectedSub?.id || deleting) ? 'opacity-60 cursor-not-allowed hover:bg-red-50' : ''}`}
@@ -167,8 +314,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             )}
 
             {selectedSub && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div ref={submissionPdfRef} className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
               {/* CONTACT INFORMATION - MIRRORING FORM LAYOUT */}
+              <div data-pdf-section="contact">
               <FormSection title="Contact Information">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                   <TextInput label="Full Name" value={selectedSub.fullName} readOnly disabled />
@@ -180,8 +328,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   </div>
                 </div>
               </FormSection>
+              </div>
 
               {/* SERVICES - MIRRORING FORM LAYOUT */}
+              <div data-pdf-section="services">
               <FormSection title="Services">
                 <p className="text-slate-500 text-sm mb-6 font-medium">Services you're interested in (check all that apply)</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 mb-12">
@@ -212,8 +362,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   </div>
                 </div>
               </FormSection>
+              </div>
 
               {/* SERVICE-SPECIFIC DETAILS - MIRRORING FORM LAYOUT */}
+              <div data-pdf-section="specific-details">
               <FormSection title="Service-Specific Details (Optional)">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                   <div className="space-y-6 flex flex-col">
@@ -257,7 +409,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                         value={selectedSub.currentlyUsingTools === 'yes' ? 'Yes' : selectedSub.currentlyUsingTools === 'no' ? 'No' : ''} 
                         disabled 
                       />
-                      <div className="flex flex-col space-y-1">
+                      <div className="flex flex-col space-y-2">
                         <label className="text-sm font-medium text-slate-700">Main challenge to solve</label>
                         <textarea 
                           rows={3} 
@@ -271,8 +423,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   </div>
                 </div>
               </FormSection>
+              </div>
 
               {/* REFERRAL & COMMUNICATION - MIRRORING FORM LAYOUT */}
+              <div data-pdf-section="referral">
               <FormSection title="Referral & Communication">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   <div>
@@ -302,6 +456,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   </div>
                 </div>
               </FormSection>
+              </div>
               
             </div>
             )}

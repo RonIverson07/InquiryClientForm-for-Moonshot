@@ -10,7 +10,7 @@ export const TextInput: React.FC<InputProps> = ({ label, optional, className = "
   const showRequired = !!props.required && !optional;
 
   return (
-    <div className={`flex flex-col space-y-1 ${className}`}>
+    <div className={`flex flex-col space-y-2 ${className}`}>
       <label className="text-sm font-medium text-slate-700">
         {label}
         {showRequired && <span className="text-red-500"> *</span>}
@@ -47,7 +47,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   const showRequired = !!props.required && !optional;
 
   return (
-    <div className={`flex flex-col space-y-1 ${className}`}>
+    <div className={`flex flex-col space-y-2 ${className}`}>
       <label className="text-sm font-medium text-slate-700">
         {label}
         {showRequired && <span className="text-red-500"> *</span>}
