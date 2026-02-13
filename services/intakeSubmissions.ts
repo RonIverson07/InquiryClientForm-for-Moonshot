@@ -1,4 +1,5 @@
 import { ClientFormData } from '../types';
+import { supabase } from '../lib/supabaseClient';
 
 export const createIntakeSubmission = async (data: ClientFormData) => {
   const res = await fetch('http://localhost:3001/api/intake', {
@@ -21,7 +22,12 @@ export const createIntakeSubmission = async (data: ClientFormData) => {
 };
 
 export const listIntakeSubmissions = async () => {
-  const res = await fetch('http://localhost:3001/api/admin/submissions');
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+
+  const res = await fetch('http://localhost:3001/api/admin/submissions', {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
   if (!res.ok) {
     let body: unknown = undefined;
     try {
@@ -37,8 +43,12 @@ export const listIntakeSubmissions = async () => {
 };
 
 export const deleteIntakeSubmission = async (id: string) => {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+
   const res = await fetch(`http://localhost:3001/api/admin/submissions/${encodeURIComponent(id)}`, {
     method: 'DELETE',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 
   if (!res.ok) {

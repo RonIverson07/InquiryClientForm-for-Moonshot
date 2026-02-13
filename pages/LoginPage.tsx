@@ -1,7 +1,7 @@
 
-import React from 'react';
-import { AppView } from '../types';
+import React, { useState } from 'react';
 import { TextInput } from '../components/Input';
+import { supabase } from '../lib/supabaseClient';
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -10,6 +10,11 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, onForgotPassword }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
       <div className="bg-white p-10 rounded-2xl shadow-2xl max-w-md w-full border-t-[6px] border-[#0ea5e9] relative">
@@ -21,7 +26,29 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, onForgotPassword
           <p className="text-slate-400 text-sm font-medium">Access StartupLab Management Console</p>
         </div>
         <form 
-          onSubmit={(e) => { e.preventDefault(); onLogin(); }} 
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const trimmedEmail = email.trim();
+            if (!trimmedEmail || !password) {
+              setError('Email and password are required.');
+              return;
+            }
+
+            try {
+              setSubmitting(true);
+              setError(null);
+              const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: trimmedEmail,
+                password,
+              });
+              if (signInError) throw signInError;
+              onLogin();
+            } catch (err) {
+              setError(err instanceof Error ? err.message : 'Login failed');
+            } finally {
+              setSubmitting(false);
+            }
+          }} 
           className="space-y-8"
           noValidate
         >
@@ -30,18 +57,26 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, onForgotPassword
               label="Email Address" 
               type="email" 
               placeholder="admin@startuplab.com" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
             <TextInput 
               label="Password" 
               type="password" 
               placeholder="••••••••" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
+          {error && <p className="text-xs text-red-600 font-semibold">{error}</p>}
           <button 
             type="submit"
-            className="w-full py-4 bg-[#0ea5e9] text-white font-bold rounded-xl hover:bg-sky-600 transition-all shadow-lg shadow-sky-100 uppercase tracking-widest text-sm active:scale-95"
+            disabled={submitting}
+            className={`w-full py-4 bg-[#0ea5e9] text-white font-bold rounded-xl hover:bg-sky-600 transition-all shadow-lg shadow-sky-100 uppercase tracking-widest text-sm active:scale-95 ${submitting ? 'opacity-70 cursor-not-allowed hover:bg-[#0ea5e9]' : ''}`}
           >
-            Sign In
+            {submitting ? 'Signing in…' : 'Sign In'}
           </button>
           <div className="text-center">
             <button

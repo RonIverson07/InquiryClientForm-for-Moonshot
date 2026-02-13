@@ -13,12 +13,29 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/admin/submissions', async (req, res) => {
+const requireAdmin = async (req, res, next) => {
   const adminToken = process.env.ADMIN_TOKEN;
-  if (adminToken && req.header('x-admin-token') !== adminToken) {
+  if (adminToken && req.header('x-admin-token') === adminToken) {
+    return next();
+  }
+
+  const authHeader = req.header('authorization') || '';
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  const jwt = match?.[1];
+  if (!jwt) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
+  const { data, error } = await supabaseAdmin.auth.getUser(jwt);
+  if (error || !data?.user) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  req.user = data.user;
+  return next();
+};
+
+app.get('/api/admin/submissions', requireAdmin, async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('intake_submissions')
     .select('*')
@@ -68,12 +85,7 @@ app.get('/api/admin/submissions', async (req, res) => {
   return res.json({ submissions });
 });
 
-app.delete('/api/admin/submissions/:id', async (req, res) => {
-  const adminToken = process.env.ADMIN_TOKEN;
-  if (adminToken && req.header('x-admin-token') !== adminToken) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
+app.delete('/api/admin/submissions/:id', requireAdmin, async (req, res) => {
   const { id } = req.params;
   if (!id) {
     return res.status(400).json({ message: 'Missing id' });

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { TextInput } from '../components/Input';
 import { supabase } from '../lib/supabaseClient';
 
 interface PasswordRecoveryPageProps {
@@ -7,20 +6,14 @@ interface PasswordRecoveryPageProps {
 }
 
 const PasswordRecoveryPage: React.FC<PasswordRecoveryPageProps> = ({ onBackToLogin }) => {
-  const [email, setEmail] = useState('');
+  const adminEmail = 'roniversonroguel.startuplab@gmail.com';
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = email.trim();
-
-    if (!trimmed) {
-      setError('Email is required.');
-      setMessage(null);
-      return;
-    }
+    const trimmed = adminEmail.trim();
 
     try {
       setSubmitting(true);
@@ -53,15 +46,19 @@ const PasswordRecoveryPage: React.FC<PasswordRecoveryPageProps> = ({ onBackToLog
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-          <TextInput
-            label="Email Address"
-            type="email"
-            placeholder="admin@startuplab.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            error={error ?? undefined}
-          />
+          <div className="flex flex-col space-y-1">
+            <label className="text-sm font-medium text-slate-700">Email Address</label>
+            <input
+              type="email"
+              placeholder="admin@startuplab.com"
+              value={adminEmail}
+              readOnly
+              disabled
+              required
+              className={`text-slate-900 px-4 py-2.5 bg-slate-50 border rounded-md outline-none cursor-default opacity-80 ${error ? 'border-red-500' : 'border-slate-200'}`}
+            />
+            {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
+          </div>
 
           {message && <p className="text-xs text-green-700 font-semibold">{message}</p>}
 
