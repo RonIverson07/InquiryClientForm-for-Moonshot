@@ -54,6 +54,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     { value: '20+', label: '20+ members' }
   ];
 
+  const handleDeleteSelected = async () => {
+    if (!selectedSub?.id) return;
+    const ok = window.confirm('Delete this submission? This cannot be undone.');
+    if (!ok) return;
+
+    try {
+      setDeleting(true);
+      setError(null);
+      await deleteIntakeSubmission(selectedSub.id);
+
+      setSubmissions((prev) => {
+        const next = prev.filter((s) => s.id !== selectedSub.id);
+        setSelectedSub((current) => {
+          if (!current?.id) return current;
+          if (current.id !== selectedSub.id) return current;
+          return next[0] ?? null;
+        });
+        return next;
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete submission');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <header className="bg-white border-b border-slate-200 py-3 px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
@@ -119,33 +145,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               </div>
               <div className="flex space-x-2">
                 <span className="bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-200">Verified</span>
-                <button className="bg-white border border-slate-200 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">Action Item</button>
                 <button
                   type="button"
                   disabled={!selectedSub?.id || deleting}
-                  onClick={async () => {
-                    if (!selectedSub?.id) return;
-                    const ok = window.confirm('Delete this submission? This cannot be undone.');
-                    if (!ok) return;
-
-                    try {
-                      setDeleting(true);
-                      setError(null);
-                      await deleteIntakeSubmission(selectedSub.id);
-
-                      setSubmissions((prev) => prev.filter((s) => s.id !== selectedSub.id));
-                      setSelectedSub((prev) => {
-                        if (!prev?.id) return prev;
-                        if (prev.id !== selectedSub.id) return prev;
-                        const remaining = submissions.filter((s) => s.id !== selectedSub.id);
-                        return remaining[0] ?? null;
-                      });
-                    } catch (err) {
-                      setError(err instanceof Error ? err.message : 'Failed to delete submission');
-                    } finally {
-                      setDeleting(false);
-                    }
-                  }}
+                  onClick={handleDeleteSelected}
                   className={`bg-red-50 border border-red-200 text-red-700 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all ${(!selectedSub?.id || deleting) ? 'opacity-60 cursor-not-allowed hover:bg-red-50' : ''}`}
                 >
                   {deleting ? 'Deleting…' : 'Delete'}
