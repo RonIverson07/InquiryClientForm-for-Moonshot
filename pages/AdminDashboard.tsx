@@ -20,6 +20,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [exportingPdf, setExportingPdf] = useState(false);
   const submissionPdfRef = useRef<HTMLDivElement | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const formatSubmittedAt = (val?: string) => {
     if (!val) return '—';
@@ -34,6 +35,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       hour12: true,
     }).format(d);
   };
+
+  const filteredSubmissions = React.useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return submissions;
+    return submissions.filter((s) => {
+      const name = (s.fullName || '').toLowerCase();
+      const email = (s.email || '').toLowerCase();
+      return name.includes(q) || email.includes(q);
+    });
+  }, [submissions, searchQuery]);
 
   useEffect(() => {
     let cancelled = false;
@@ -264,6 +275,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         <aside className="w-80 bg-white border-r border-slate-200 overflow-y-auto flex flex-col shadow-inner">
           <div className="p-5 border-b border-slate-100 bg-slate-50/50">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">User Submissions</h3>
+            <div className="mt-4">
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M9 3a6 6 0 104.472 10.03l2.249 2.25a1 1 0 001.414-1.415l-2.25-2.249A6 6 0 009 3zm-4 6a4 4 0 118 0 4 4 0 01-8 0z" clipRule="evenodd" />
+                </svg>
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search name or email..."
+                  className="w-full pl-9 pr-9 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent outline-none"
+                />
+                {searchQuery.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 mx-auto" aria-hidden="true">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
           <div className="flex-grow">
             {loading && (
@@ -272,11 +308,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             {!loading && error && (
               <div className="p-5 text-xs text-red-600 break-words">{error}</div>
             )}
-            {!loading && !error && submissions.length === 0 && (
+            {!loading && !error && filteredSubmissions.length === 0 && (
               <div className="p-5 text-xs text-slate-500">No submissions yet.</div>
             )}
 
-            {!loading && !error && submissions.map((sub) => (
+            {!loading && !error && filteredSubmissions.map((sub) => (
               <button
                 key={sub.id}
                 onClick={() => setSelectedSub(sub)}
