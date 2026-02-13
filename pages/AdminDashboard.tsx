@@ -248,7 +248,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             alt="StartupLab"
             className="h-10 w-10 rounded-lg object-contain bg-white"
           />
-          <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">Admin Console</h1>
+          <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">Admin</h1>
         </div>
         <div className="flex items-center space-x-4">
           <button 
