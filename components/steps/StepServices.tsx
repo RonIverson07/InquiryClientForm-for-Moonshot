@@ -37,7 +37,10 @@ const StepServices: React.FC<StepProps> = ({ formData, onServiceToggle, onInputC
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
       <FormSection title="Services">
-        <p className="text-slate-500 text-sm mb-8 font-medium">Services you're interested in (check all that apply)</p>
+        <p className="text-slate-500 text-sm mb-8 font-medium">
+          Services you're interested in (check all that apply)
+          <span className="text-red-500 font-black"> *</span>
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-4 mb-12">
           <Checkbox label="AI Workflow & Automation" checked={formData.services.aiWorkflowAutomation} onChange={() => onServiceToggle('aiWorkflowAutomation')} />
           <Checkbox label="Website Design & Development" checked={formData.services.websiteDesignDevelopment} onChange={() => onServiceToggle('websiteDesignDevelopment')} />
