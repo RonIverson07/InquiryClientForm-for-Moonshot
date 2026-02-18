@@ -27,7 +27,7 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
   ];
 
   const errors = useMemo(() => {
-    const nextErrors: Partial<Record<'referralSource' | 'preferredContact' | 'bestTimeToReach' | 'otherReferralSource', string>> = {};
+    const nextErrors: Partial<Record<'referralSource' | 'preferredContact' | 'bestTimeToReach' | 'bestTimeFrom' | 'bestTimeTo' | 'otherReferralSource', string>> = {};
 
     if (!formData.referralSource.length) {
       nextErrors.referralSource = 'Please select at least one referral source.';
@@ -41,12 +41,20 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
       nextErrors.bestTimeToReach = 'Best Time to Reach You is required.';
     }
 
+    if (!formData.bestTimeFrom?.trim()) {
+      nextErrors.bestTimeFrom = 'From time is required.';
+    }
+
+    if (!formData.bestTimeTo?.trim()) {
+      nextErrors.bestTimeTo = 'To time is required.';
+    }
+
     if (formData.referralSource.includes('Other') && !formData.otherReferralSource?.trim()) {
       nextErrors.otherReferralSource = 'Please specify the referral source.';
     }
 
     return nextErrors;
-  }, [formData.bestTimeToReach, formData.otherReferralSource, formData.referralSource, formData.preferredContact]);
+  }, [formData.bestTimeFrom, formData.bestTimeTo, formData.bestTimeToReach, formData.otherReferralSource, formData.referralSource, formData.preferredContact]);
 
   const isValid = Object.keys(errors).length === 0;
 
@@ -146,6 +154,7 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
                   name="bestTimeFrom"
                   value={formData.bestTimeFrom || ''}
                   onChange={onInputChange as any}
+                  required
                 />
                 <TextInput
                   label="To"
@@ -153,8 +162,12 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
                   name="bestTimeTo"
                   value={formData.bestTimeTo || ''}
                   onChange={onInputChange as any}
+                  required
                 />
               </div>
+              {showErrors && (errors.bestTimeFrom || errors.bestTimeTo) && (
+                <p className="mt-2 text-xs text-red-600">{errors.bestTimeFrom || errors.bestTimeTo}</p>
+              )}
             </div>
           </div>
         </div>
