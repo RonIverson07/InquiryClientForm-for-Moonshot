@@ -48,8 +48,10 @@ export const intakeSubmissionSchema = z
     referralSource: z.array(z.string()),
     otherReferralSource: z.string().optional().nullable(),
 
-    preferredContact: z.enum(['Email', 'Phone', 'Messenger', '']),
+    preferredContact: z.array(z.enum(['Email', 'Phone', 'Messenger'])).min(1, 'Preferred Contact Method is required'),
     bestTimeToReach: z.string().trim().min(1, 'Best Time to Reach You is required'),
+    bestTimeFrom: z.string().trim().min(1, 'From time is required'),
+    bestTimeTo: z.string().trim().min(1, 'To time is required'),
   })
   .superRefine((data, ctx) => {
     const selectedServices = Object.values(data.services).some(Boolean);

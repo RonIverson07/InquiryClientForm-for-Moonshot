@@ -56,7 +56,7 @@ const StepServices: React.FC<StepProps> = ({ formData, onServiceToggle, onInputC
         
         <div className="space-y-10">
           <div className="flex flex-col space-y-4">
-            <label className="text-sm font-bold text-slate-800 uppercase tracking-wider">Needs & Goals (Optional)</label>
+            <label className="text-sm font-bold text-slate-800 uppercase tracking-wider">Interested Package (OPTIONAL)</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {packages.map((pkg) => (
                 <label key={pkg} className={`flex items-center p-4 rounded-xl border-2 transition-all cursor-pointer group ${formData.selectedPackage === pkg ? 'border-[#0ea5e9] bg-sky-50' : 'border-slate-100 bg-white hover:border-slate-200'}`}>

@@ -46,6 +46,32 @@ app.get('/api/admin/submissions', requireAdmin, async (req, res) => {
     return res.status(500).json({ message: 'Fetch failed', error });
   }
 
+  const normalizePreferredContact = (val) => {
+    if (Array.isArray(val)) return val.filter(Boolean);
+    if (typeof val === 'string') {
+      const trimmed = val.trim();
+      if (!trimmed) return [];
+      if (trimmed.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) return parsed.filter(Boolean);
+        } catch {
+          // ignore
+        }
+      }
+      if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+        const inner = trimmed.slice(1, -1).trim();
+        if (!inner) return [];
+        return inner
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+      return [trimmed];
+    }
+    return [];
+  };
+
   const submissions = (data ?? []).map((row) => ({
     id: row.id,
     submittedAt: row.created_at,
@@ -78,8 +104,10 @@ app.get('/api/admin/submissions', requireAdmin, async (req, res) => {
 
     referralSource: row.referral_source ?? [],
     otherReferralSource: row.other_referral_source ?? '',
-    preferredContact: row.preferred_contact ?? '',
+    preferredContact: normalizePreferredContact(row.preferred_contact),
     bestTimeToReach: row.best_time_to_reach ?? '',
+    bestTimeFrom: row.best_time_from ?? '',
+    bestTimeTo: row.best_time_to ?? '',
   }));
 
   return res.json({ submissions });
@@ -134,8 +162,10 @@ app.post('/api/intake', async (req, res) => {
     referral_source: data.referralSource,
     other_referral_source: data.otherReferralSource || null,
 
-    preferred_contact: data.preferredContact || null,
+    preferred_contact: data.preferredContact,
     best_time_to_reach: data.bestTimeToReach,
+    best_time_from: data.bestTimeFrom || null,
+    best_time_to: data.bestTimeTo || null,
   };
 
   const { error } = await supabaseAdmin.from('intake_submissions').insert(payload);

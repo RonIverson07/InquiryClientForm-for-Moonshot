@@ -40,8 +40,10 @@ const App: React.FC = () => {
     mainChallenge: '',
     referralSource: [],
     otherReferralSource: '',
-    preferredContact: '',
+    preferredContact: [],
     bestTimeToReach: '',
+    bestTimeFrom: '',
+    bestTimeTo: '',
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -67,6 +69,16 @@ const App: React.FC = () => {
       } else {
         return { ...prev, referralSource: [...current, source] };
       }
+    });
+  };
+
+  const handlePreferredContactToggle = (method: 'Email' | 'Phone' | 'Messenger') => {
+    setFormData((prev) => {
+      const current = prev.preferredContact;
+      if (current.includes(method)) {
+        return { ...prev, preferredContact: current.filter((m) => m !== method) };
+      }
+      return { ...prev, preferredContact: [...current, method] };
     });
   };
 
@@ -163,6 +175,7 @@ const App: React.FC = () => {
           onInputChange={handleInputChange}
           onServiceToggle={handleServiceToggle}
           onReferralToggle={handleReferralToggle}
+          onPreferredContactToggle={handlePreferredContactToggle}
           onSubmit={handleFormSubmit}
           onSwitchView={setView}
         />

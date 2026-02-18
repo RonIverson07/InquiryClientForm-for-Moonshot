@@ -49,8 +49,10 @@ export default async function handler(req, res) {
     referral_source: data.referralSource,
     other_referral_source: data.otherReferralSource || null,
 
-    preferred_contact: data.preferredContact || null,
+    preferred_contact: data.preferredContact,
     best_time_to_reach: data.bestTimeToReach,
+    best_time_from: data.bestTimeFrom || null,
+    best_time_to: data.bestTimeTo || null,
   };
 
   const { error } = await supabaseAdmin.from('intake_submissions').insert(payload);

@@ -205,6 +205,45 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         bestTimeInput.replaceWith(replacement);
       }
 
+      const formatTimeTo12Hour = (val: string) => {
+        const m = val.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+        if (!m) return val;
+        const hour24 = Number(m[1]);
+        const minute = m[2];
+        const isPm = hour24 >= 12;
+        const hour12 = ((hour24 + 11) % 12) + 1;
+        const hh = String(hour12).padStart(2, '0');
+        const suffix = isPm ? 'pm' : 'am';
+        return `${hh}:${minute} ${suffix}`;
+      };
+
+      const replaceTimeInputByLabel = (labelText: string) => {
+        const labelEl = labelEls.find((n) => (n.textContent || '').trim() === labelText);
+        const timeInput = labelEl?.parentElement?.querySelector('input') as HTMLInputElement | null;
+        if (!timeInput) return;
+        if ((timeInput.getAttribute('type') || '').toLowerCase() !== 'time') return;
+
+        const replacement = document.createElement('div');
+        replacement.textContent = formatTimeTo12Hour(timeInput.value);
+        replacement.style.boxSizing = 'border-box';
+        replacement.style.width = '100%';
+        replacement.style.color = '#0f172a';
+        replacement.style.background = '#f8fafc';
+        replacement.style.border = '1px solid #e2e8f0';
+        replacement.style.borderRadius = '0.375rem';
+        replacement.style.paddingLeft = '1rem';
+        replacement.style.paddingRight = '1rem';
+        replacement.style.paddingTop = '0.7rem';
+        replacement.style.paddingBottom = '0.7rem';
+        replacement.style.fontSize = '1rem';
+        replacement.style.lineHeight = '1.5rem';
+
+        timeInput.replaceWith(replacement);
+      };
+
+      replaceTimeInputByLabel('From');
+      replaceTimeInputByLabel('To');
+
       const sections = Array.from(clone.querySelectorAll('[data-pdf-section]')) as HTMLElement[];
       const page1 = document.createElement('div');
       page1.style.width = `${Math.ceil(rect.width)}px`;
@@ -399,7 +438,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 
                 <div className="space-y-10">
                   <div className="flex flex-col space-y-4">
-                    <label className="text-sm font-bold text-slate-800 uppercase tracking-wider">Needs & Goals (Optional)</label>
+                    <label className="text-sm font-bold text-slate-800 uppercase tracking-wider">Interested Package (OPTIONAL)</label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {packages.map((pkg) => (
                         <div key={pkg} className={`flex items-center p-4 rounded-xl border-2 transition-all ${selectedSub.selectedPackage === pkg ? 'border-[#0ea5e9] bg-sky-50' : 'border-slate-100 bg-white opacity-60'}`}>
@@ -499,13 +538,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     </div>
                   </div>
                   <div className="space-y-6">
-                    <RadioGroup 
-                      label="Preferred Contact Method" 
-                      options={["Email", "Phone", "Messenger"]} 
-                      value={selectedSub.preferredContact} 
-                      disabled 
-                    />
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium text-slate-700">Preferred Contact Method</p>
+                      <div className="flex flex-wrap gap-6">
+                        <Checkbox label="Email" checked={selectedSub.preferredContact.includes('Email')} disabled />
+                        <Checkbox label="Phone" checked={selectedSub.preferredContact.includes('Phone')} disabled />
+                        <Checkbox label="Messenger" checked={selectedSub.preferredContact.includes('Messenger')} disabled />
+                      </div>
+                    </div>
                     <TextInput label="Best Time to Reach" value={selectedSub.bestTimeToReach} readOnly disabled />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <TextInput label="From" type="time" value={selectedSub.bestTimeFrom || ''} readOnly disabled />
+                      <TextInput label="To" type="time" value={selectedSub.bestTimeTo || ''} readOnly disabled />
+                    </div>
                   </div>
                 </div>
               </FormSection>

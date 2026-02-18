@@ -12,6 +12,7 @@ interface IntakeFormProps {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onServiceToggle: (service: keyof ClientFormData['services']) => void;
   onReferralToggle: (source: string) => void;
+  onPreferredContactToggle: (method: 'Email' | 'Phone' | 'Messenger') => void;
   onSubmit: (e: React.FormEvent) => void;
   onSwitchView: (view: AppView) => void;
 }
@@ -22,6 +23,7 @@ const IntakeForm: React.FC<IntakeFormProps> = ({
   onInputChange,
   onServiceToggle,
   onReferralToggle,
+  onPreferredContactToggle,
   onSubmit,
   onSwitchView
 }) => {
@@ -71,7 +73,7 @@ const IntakeForm: React.FC<IntakeFormProps> = ({
       case 3:
         return <StepSpecificDetails formData={formData} onInputChange={onInputChange} onNext={nextStep} onPrev={prevStep} />;
       case 4:
-        return <StepReferral formData={formData} status={status} onReferralToggle={onReferralToggle} onInputChange={onInputChange} onPrev={prevStep} onSubmit={onSubmit} />;
+        return <StepReferral formData={formData} status={status} onReferralToggle={onReferralToggle} onPreferredContactToggle={onPreferredContactToggle} onInputChange={onInputChange as any} onPrev={prevStep} onSubmit={onSubmit} />;
       default:
         return null;
     }

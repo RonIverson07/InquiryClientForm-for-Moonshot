@@ -34,8 +34,10 @@ export interface ClientFormData {
   // Referral
   referralSource: string[];
   otherReferralSource?: string;
-  preferredContact: 'Email' | 'Phone' | 'Messenger' | '';
+  preferredContact: Array<'Email' | 'Phone' | 'Messenger'>;
   bestTimeToReach: string;
+  bestTimeFrom?: string;
+  bestTimeTo?: string;
 }
 
 export enum FormStatus {
@@ -81,7 +83,7 @@ export const MOCK_SUBMISSIONS: ClientFormData[] = [
     currentlyUsingTools: 'yes',
     mainChallenge: 'Inefficient manual processes.',
     referralSource: ['Social Media', 'Website'],
-    preferredContact: 'Email',
+    preferredContact: ['Email'],
     bestTimeToReach: 'Afternoon'
   },
   {
@@ -108,7 +110,7 @@ export const MOCK_SUBMISSIONS: ClientFormData[] = [
     currentlyUsingTools: 'no',
     mainChallenge: 'Scaling software for inventory tracking.',
     referralSource: ['Friend/Referral'],
-    preferredContact: 'Phone',
+    preferredContact: ['Phone'],
     bestTimeToReach: 'Morning'
   }
 ];

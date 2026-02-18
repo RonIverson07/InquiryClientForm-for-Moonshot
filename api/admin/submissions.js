@@ -26,6 +26,32 @@ export default async function handler(req, res) {
     return;
   }
 
+  const normalizePreferredContact = (val) => {
+    if (Array.isArray(val)) return val.filter(Boolean);
+    if (typeof val === 'string') {
+      const trimmed = val.trim();
+      if (!trimmed) return [];
+      if (trimmed.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) return parsed.filter(Boolean);
+        } catch {
+          // ignore
+        }
+      }
+      if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+        const inner = trimmed.slice(1, -1).trim();
+        if (!inner) return [];
+        return inner
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+      return [trimmed];
+    }
+    return [];
+  };
+
   const submissions = (data ?? []).map((row) => ({
     id: row.id,
     submittedAt: row.created_at,
@@ -50,8 +76,10 @@ export default async function handler(req, res) {
 
     referralSource: row.referral_source ?? [],
     otherReferralSource: row.other_referral_source ?? '',
-    preferredContact: row.preferred_contact ?? '',
+    preferredContact: normalizePreferredContact(row.preferred_contact),
     bestTimeToReach: row.best_time_to_reach ?? '',
+    bestTimeFrom: row.best_time_from ?? '',
+    bestTimeTo: row.best_time_to ?? '',
   }));
 
   res.statusCode = 200;

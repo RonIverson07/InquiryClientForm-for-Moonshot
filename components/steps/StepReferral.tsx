@@ -1,26 +1,27 @@
 
 import React, { useMemo, useState } from 'react';
 import { ClientFormData, FormStatus } from '../../types';
-import { TextInput, Checkbox, RadioGroup, SelectInput } from '../Input';
+import { TextInput, Checkbox, SelectInput } from '../Input';
 import FormSection from '../FormSection';
 
 interface StepProps {
   formData: ClientFormData;
   status: FormStatus;
   onReferralToggle: (source: string) => void;
+  onPreferredContactToggle: (method: 'Email' | 'Phone' | 'Messenger') => void;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPrev: () => void;
   onSubmit: (e: React.FormEvent) => void;
 }
 
-const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle, onInputChange, onPrev, onSubmit }) => {
+const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle, onPreferredContactToggle, onInputChange, onPrev, onSubmit }) => {
   const [showErrors, setShowErrors] = useState(false);
 
   const bestTimeOptions = [
     { value: 'Anytime', label: 'Anytime' },
-    { value: 'Morning (8:00 AM – 12:00 PM)', label: 'Morning (8:00 AM – 12:00 PM)' },
-    { value: 'Afternoon (12:00 PM – 5:00 PM)', label: 'Afternoon (12:00 PM – 5:00 PM)' },
-    { value: 'Evening (5:00 PM – 8:00 PM)', label: 'Evening (5:00 PM – 8:00 PM)' },
+    { value: 'Morning', label: 'Morning' },
+    { value: 'Afternoon', label: 'Afternoon' },
+    { value: 'Evening', label: 'Evening' },
     { value: 'Weekdays Only', label: 'Weekdays Only' },
     { value: 'Weekends Only', label: 'Weekends Only' },
   ];
@@ -32,7 +33,7 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
       nextErrors.referralSource = 'Please select at least one referral source.';
     }
 
-    if (!formData.preferredContact.trim()) {
+    if (!formData.preferredContact.length) {
       nextErrors.preferredContact = 'Preferred Contact Method is required.';
     }
 
@@ -45,7 +46,7 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
     }
 
     return nextErrors;
-  }, [formData.bestTimeToReach, formData.otherReferralSource, formData.referralSource]);
+  }, [formData.bestTimeToReach, formData.otherReferralSource, formData.referralSource, formData.preferredContact]);
 
   const isValid = Object.keys(errors).length === 0;
 
@@ -98,13 +99,29 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
           </div>
 
           <div className="space-y-10">
-            <RadioGroup 
-              label="Preferred Contact Method" 
-              options={["Email", "Phone", "Messenger"]} 
-              value={formData.preferredContact} 
-              onChange={(val) => onInputChange({ target: { name: 'preferredContact', value: val } } as any)} 
-              required
-            />
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-slate-700">
+                Preferred Contact Method
+                <span className="text-red-500"> *</span>
+              </p>
+              <div className="flex flex-wrap gap-6">
+                <Checkbox
+                  label="Email"
+                  checked={formData.preferredContact.includes('Email')}
+                  onChange={() => onPreferredContactToggle('Email')}
+                />
+                <Checkbox
+                  label="Phone"
+                  checked={formData.preferredContact.includes('Phone')}
+                  onChange={() => onPreferredContactToggle('Phone')}
+                />
+                <Checkbox
+                  label="Messenger"
+                  checked={formData.preferredContact.includes('Messenger')}
+                  onChange={() => onPreferredContactToggle('Messenger')}
+                />
+              </div>
+            </div>
             {showErrors && errors.preferredContact && (
               <p className="-mt-6 text-xs text-red-600">{errors.preferredContact}</p>
             )}
@@ -121,6 +138,23 @@ const StepReferral: React.FC<StepProps> = ({ formData, status, onReferralToggle,
               {showErrors && errors.bestTimeToReach && (
                 <p className="mt-2 text-xs text-red-600">{errors.bestTimeToReach}</p>
               )}
+
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <TextInput
+                  label="From"
+                  type="time"
+                  name="bestTimeFrom"
+                  value={formData.bestTimeFrom || ''}
+                  onChange={onInputChange as any}
+                />
+                <TextInput
+                  label="To"
+                  type="time"
+                  name="bestTimeTo"
+                  value={formData.bestTimeTo || ''}
+                  onChange={onInputChange as any}
+                />
+              </div>
             </div>
           </div>
         </div>
